@@ -1,0 +1,28 @@
+ Makefile.in |   14 +++++++++++++-
+ 1 files changed, 13 insertions(+), 1 deletions(-)
+
+diff --git a/Makefile.in b/Makefile.in
+index 891a139..e02e039 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -123,7 +123,19 @@ configurator:
+ 
+ #   Installation
+ 
+-install:    $(PRODUCT) $(PRODUCT)-run
++install-man: $(PRODUCT).1
++	$(INSTALL) -d $(DESTDIR)$(man1dir)
++	$(INSTALL_DATA) *.1 $(DESTDIR)$(man1dir)
++
++install-bin: $(PRODUCT) $(PRODUCT)-run
++	$(INSTALL) -d $(LIBDIR) $(BINDIR)
++	$(INSTALL_PROGRAM) $(PRODUCT) $(BINDIR)
++	$(INSTALL_PROGRAM) $(PRODUCT)-run $(BINDIR)
++	-[ -f dict.bin ] && $(INSTALL_DATA) dict.bin $(LIBDIR)
++
++install: install-bin install-man
++
++install-old:	$(PRODUCT) $(PRODUCT)-run
+ 	@if [ ! -d $(HOME)/.$(PRODUCT) ] ;\
+ 		then echo 'Creating directory $(HOME)/.$(PRODUCT)' ;\
+ 		     mkdir $(HOME)/.$(PRODUCT) ;\

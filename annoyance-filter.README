@@ -1,0 +1,96 @@
+annoyance-filter
+------------------------------------------
+
+Adaptive Bayesian Junk Mail Filter
+
+Program sifts mail you wish to read from junk arriving in your
+mailbox by an adaptive process which gives priority to mail you're
+interested in reading, and evolves to block cleverly disguised junk mail.
+
+Install notes:
+
+  Each user must create directory ~/.annoyance-filter and file
+  dict.bin from his spam/ham collection. See manual page and
+  See usr/share/doc/annoyance-filter-*/INSTALL for more information.
+
+Runtime requirements:
+  cygwin
+
+Build requirements:
+  cygwin
+
+Canonical homepage:
+  http://freshmeat.net/projects/annoyancefilter
+  http://packages.debian.org/annoyance-filter
+
+Canonical download:
+  See above
+
+Version control repository:
+  http://sourceforge.net/cvs/?group_id=64707
+
+Mailing list:
+
+Forum / Wiki:
+
+IRC channel:
+
+Upstream contact:
+  Author: John Walker <kelvin@fourmilab.ch>
+  Bugs: (subject containing word: annoyance-filter) <bugs@fourmilab.ch>
+
+License:
+  GPL
+
+Language:
+  C++
+
+------------------------------------
+
+Build instructions:
+  unpack annoyance-filter--1.0d-1-src.tar.bz2
+    if you use setup to install this src package, it will be
+    unpacked under /usr/src automatically
+  cd /usr/src
+  ./annoyance-filter*.sh all
+
+This will create:
+  annoyance-filter--1.0d-1.tar.bz2
+  annoyance-filter--1.0d-1-src.tar.bz2
+
+-------------------------------------------
+
+Files included in the binary distro:
+
+/usr/bin/annoyance-filter-run
+/usr/bin/annoyance-filter.exe
+/usr/share/doc/Cygwin/annoyance-filter-1.0d.README
+/usr/share/doc/annoyance-filter-1.0d/COPYING
+/usr/share/doc/annoyance-filter-1.0d/COPYING.GNU
+/usr/share/doc/annoyance-filter-1.0d/README
+/usr/share/doc/annoyance-filter-1.0d/annoyance-filter.pdf
+/usr/share/doc/annoyance-filter-1.0d/annoyance-filter_man.html
+/usr/share/doc/annoyance-filter-1.0d/utilities/fragmail.pl
+/usr/share/doc/annoyance-filter-1.0d/utilities/fromtest.pl
+/usr/share/doc/annoyance-filter-1.0d/utilities/maildir_filter.pl
+/usr/share/doc/annoyance-filter-1.0d/utilities/p_testfolder.pl
+/usr/share/doc/annoyance-filter-1.0d/utilities/splitmail.pl
+/usr/share/doc/annoyance-filter-1.0d/utilities/testfolder.pl
+/usr/share/man/man1/annoyance-filter-run.1.gz
+/usr/share/man/man1/annoyance-filter.1.gz
+
+------------------
+
+Port Notes:
+- There is separate compilation file for Cygwin, see makew32.sh
+
+----- version 1.0d-1 -----
+- Initial release 2007-08-OA03 Jari Aalto
+- Makefile: Rewrote install target
+- annoyance-filter.1: no manual page. Copied from Debian
+- annoyance-filter-run: removed "./" from path and
+  added $dict varibale. Test existence of *.bin before running
+- annoyance-filter-run.1: no manual page. Wrote one.
+
+Cygwin port maintained by: Jari Aalto <jari.aalto@cante.net>
+

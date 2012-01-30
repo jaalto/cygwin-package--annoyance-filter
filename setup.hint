@@ -1,0 +1,6 @@
+sdesc: "Adaptive Bayesian Junk Mail Filter"
+ldesc: "Program sifts mail you wish to read from junk arriving in your
+mailbox by an adaptive process which gives priority to mail you're
+interested in reading, and evolves to block cleverly disguised junk mail."
+category: Mail
+requires: cygwin

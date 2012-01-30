@@ -1,0 +1,14 @@
+# This file contains extra options when files are
+# installed. The options are given one option per line.
+
+#  This is relative to docdir/ where tar is while it installs
+--include=../utilities
+
+--exclude=README.WIN
+--exclude=statlib.pdf
+
+# These are from docutil/
+--exclude=cwebextract.pl
+--exclude=cwebtex2man.pl
+--exclude=fixman2html.pl
+--exclude=manm_expand.pl

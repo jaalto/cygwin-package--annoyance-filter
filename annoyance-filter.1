@@ -1,0 +1,753 @@
+.TH ANNOYANCE-FILTER 1 "19 FEB 2003"
+.UC 4
+.SH NAME
+annoyance-filter \- automatically detect junk mail
+.nh
+.SH SYNOPSIS
+.B annoyance-filter
+[
+.I options
+]
+.SH DESCRIPTION
+.B annoyance-filter
+uses Bayesian statistics to determine the probability an
+E-mail message is junk based on an analysis of its contents
+compared to collections of known junk and legitimate E-mail.
+.PP
+This program is under active development; new versions are
+posted frequently at:
+.ce 1
+http://www.fourmilab.ch/annoyance-filter/
+Please visit this page for news about the program and
+to download the latest version.
+.PP
+The project is hosted on SourceForge, where you will find
+the CVS source code repository and release archives:
+.ce 1
+http://sourceforge.net/projects/annoyancefilter/
+.SH USAGE
+.B annoyance-filter
+has a multitude of options which permit it to be used in
+many different ways, but the most common application involves
+.I training
+the program with collections of legitimate and junk mail
+in order to create a
+.I dictionary
+which indicates the probability that words identify a
+message as junk or non-junk (legitimate).  Training must
+be done before the program is used to classify incoming
+mail, but need be done subsequently only when adding
+messages to the training collections.  As long as
+the overall content of the mail, junk and legitimate, which
+you receive remains pretty much the same, there's no
+need to retrain, but the ability to do so allows the program
+to automatically adapt to evolving message content, which is
+particularly characteristic of junk mail.
+.PP
+Suppose you have a collection of legitimate mail (in other
+words, mail you wish to read) in a file named
+.I m\-good
+and a collection of junk mail (that which you don't wish
+to read) in file
+.IR m\-junk .
+These collections may be in ``Unix mail
+folder'' format, which is simply the text of one or more
+E-mail messages concatenated together in a single text file, or
+may be the names of directories containing files, each of which
+may be a single E-mail message or a Unix mail folder.  In either
+case, if a message file is compressed with
+.BR gzip ,
+it will be automatically uncompressed on the fly.  Directories
+of messages may not, however, contain other directories of
+messages.
+.PP
+To train
+.B annoyance-filter
+with these collections and create a dictionary, use a
+command like:
+.PP
+.ce 1
+.BI "annoyance-filter \-\-mail " m-good " \-\-junk " m-junk " \-\-prune \-\-write " dict.bin
+.PP
+where
+.I dict.bin
+is the name of the dictionary file you wish to create.
+.PP
+Now that the dictionary has been created, you can use it on subsequent
+runs to compute the probability a message is junk and classify it
+accordingly.  Suppose you have an E-mail message in the file
+.IR mail.txt .
+To compute its junk priority and display it on standard output,
+use the command:
+.PP
+.ce 1
+.BI "annoyance-filter \-\-read " dict.bin " \-\-test " mail.txt
+.PP
+To integrate
+.B annoyance-filter
+into a mail processing system such as
+.BR procmail ,
+you'll usually want to run it as a
+.I filter
+which reads incoming messages from standard input (piped there
+by the mail processing system), classifies them and adds annotations
+to the message header indicating the classification, then writes the
+message with header annotations to standard output.  The mail processing
+system may then examine the header annotations and route the
+message accordingly.  To filter a message, again assuming the
+dictionary created by the training run is in the file
+.IR dict.bin ,
+use the command:
+.PP
+.ce 1
+.BI "annoyance-filter \-\-read " dict.bin " \-\-transcript \- \-\-test \-"
+.PP
+Here the
+.B \-\-transcript
+option is used to request the input message be copied to an
+output file, in this case
+standard output, specified by
+.RB `` \- '',
+with the message read from standard input, the
+.RB `` \- ''
+argument to the
+.B \-\-test
+option.
+.SH OPTIONS
+\"  Included from section "Options." of annoyance-filter.w.  DO NOT HAND EDIT!!!
+Options are specified on the command line.  Options are treated as
+commands\(emmost instruct the program to perform some specific action;
+consequently, the order in which they are specified is
+significant; they are processed left to right. Long options
+beginning with
+.RB "``" "\-\-" "''"
+may be abbreviated to any unambiguous
+prefix; single-letter options introduced by a single
+.RB "``" "\-" "''"
+without arguments may be aggregated.
+.PP
+.TP 10
+.BI \-\-annotate " options"
+Add the annotations requested by the
+characters in
+.I "options"
+to the transcript generated
+by the
+.B "\-\-transcript"
+option.  Upper and lower case
+.I "options"
+are treated identically.  Available annotations are:
+.br
+.BR "            d        " "Decoder diagnostics"
+.br
+.BR "            p        " "Parser warnings and error messages"
+.br
+.BR "            w        " "Most significant words and their probabilities"
+.PP
+.TP
+.BI \-\-autoprune " n"
+As the dictionary is bring built by appending
+mail to it with the
+.B "\-\-mail"
+and
+.B "\-\-junk"
+options, unique words
+will automatically be pruned from it whenever the dictionary
+exceeds approximately
+.I "n"
+bytes.  This is particularly handy
+when loading large collections of messages with
+.B "\-\-phrasemax"
+set greater than one, as a very large number of unique phrases may
+clutter the dictionary being built and exceed the memory capacity
+of your computer.  You could split the mail collection into
+multiple parts and explicitly
+.B "\-\-prune"
+after each part, but
+.B "\-\-autoprune"
+is much more convenient.
+.PP
+.TP
+.BI \-\-biasmail " n"
+The frequency of words appearing in legitimate
+mail is inflated by the floating point factor
+.RI "" "n" ","
+which defaults
+to 2.  This biases the classification of messages in favour of
+``false negatives''\(emjunk mail deemed legitimate, while
+reducing the probability of ``false positives'' (legitimate
+mail erroneously classified as junk, which is
+.RI "" "bad" ")."
+The higher
+the setting of
+.RB "" "\-\-biasmail" ","
+the greater the bias in favour of
+false negatives will be.
+.PP
+.TP
+.BI \-\-binword " n"
+Binary character streams (for example, attachments
+of application-specific files, including the executable code of
+worm and virus attachments) are scanned and contiguous sequences of
+alphanumeric ASCII characters
+.I "n"
+characters or longer are
+added to the list of words in the message.  The dollar sign
+.RB "(``" "$" "'')"
+is considered an alphanumeric character for these
+purposes, and words may have embedded hyphens and apostrophes, but
+may not begin or end with those characters.  If
+.B "\-\-binword"
+is set to zero, scanning of binary attachments is disabled entirely.
+The default setting is 5 characters.
+.PP
+.TP
+.B \-\-bsdfolder
+The next
+.B "\-\-mail"
+or
+.B "\-\-junk"
+folder will be
+parsed using ``classic BSD'' rules for identifying the start of
+individual messages in the folder.  In BSD-style folders, the
+text
+.RB "``" "From\ " "''"
+as the leftmost characters of a line always
+denotes the start of a new message: any appearance of this text in
+any other context is always quoted, often by prefixing a
+.RB "``" ">" "''"
+character.  In the default
+.B "Unix"
+folder syntax,
+.RB "``" "From\ " "''"
+only marks the start of a new message if it
+appears following one or more blank lines.  Note that you must
+specify
+.B "\-\-bsdfolder"
+before each folder to be read with BSD
+rules; it is not a modal setting.
+.PP
+.TP
+.BI \-\-classify " fname"
+Classify mail in
+.RI "" "fname" "."
+If it
+equals or exceeds the junk threshold (see
+.RB "" "\-\-threshjunk" "),"
+.RB "``" "JUNK" "''"
+is written to standard
+output and the program exits with status code 3. If the
+message scores less than or equal to the mail threshold
+(see
+.RB "" "\-\-threshmail" "),"
+.RB "``" "MAIL" "''"
+is written to standard
+output and the program exits with status 0.  If the
+message's score falls between the two thresholds, its
+content is deemed indeterminate;
+.RB "``" "INDT" "''"
+is written to
+standard output and the program exits with a status of 4.
+The output can be used to set an environment variable in
+.B "Procmail"
+to control the disposition of the message.
+If
+.I "fname"
+is
+.RB "``" "\-" "''"
+the message is read from
+standard input.
+.PP
+.TP
+.B \-\-clearjunk
+Clear appearances of words in junk mail from database.
+Used when preparing a database of legitimate mail.
+.PP
+.TP
+.B \-\-clearmail
+Clear appearances of words in legitimate mail from database.
+Used when preparing a database of junk mail.
+.PP
+.TP
+.B \-\-copyright
+Print copyright information.
+.PP
+.TP
+.BI \-\-csvread " fname"
+Import a dictionary from a
+comma-separated value (CSV) file
+.RI "" "fname" "."
+Records are
+assumed to be in the format written by
+.B "\-\-csvwrite"
+but
+need not be sorted in any particular order.  Words are added
+to those already in memory.
+.PP
+.TP
+.BI \-\-csvwrite " fname"
+Export a dictionary as a
+comma-separated value (CSV)
+.I "fname"
+with this option.  Such
+files can be loaded into spreadsheet or database programs for
+further processing.  Words are sorted first in ascending order
+of probability they denote junk mail, then lexically.
+.PP
+.TP
+.BI "\-\-fread, \-r" " fname"
+Load a fast dictionary (previously
+created with the
+.B "\-\-fwrite"
+option) from file
+.RI "" "fname" "."
+.PP
+.TP
+.BI \-\-fwrite " fname"
+Write a dictionary to the file
+.I "fname"
+in fast dictionary format.  Fast dictionaries are written in a binary
+format which is
+.I "not"
+portable across machines with different
+byte order conventions and cannot be added incrementally to assemble
+a larger dictionary, but can be loaded in a small fraction of
+the time required by the format created by the
+.B "\-\-write"
+command.
+Using a fast dictionary for routine classification of incoming
+mail drastically reduces the time consumed in loading the
+dictionary for each message.
+.PP
+.TP
+.BR \-\-help ", " \-u
+Print how-to-call information including a
+list of options.
+.PP
+.TP
+.BI "\-\-junk, \-j" " fname"
+Add the mail in folder
+.I "fname"
+to the dictionary as junk mail.  These folders may be compressed
+by a utility the host system can uncompress; specify the complete
+file name including the extension denoting its form of compression.
+If
+.I "fname"
+is
+.RB "``" "\-" "''"
+the mail folder is read from
+standard input.
+.PP
+.TP
+.B \-\-list
+List the dictionary on standard output.
+.PP
+.TP
+.BI "\-\-mail, \-m" " fname"
+Add the mail in folder
+.I "fname"
+to the dictionary as legitimate mail.  These folders may be compressed
+by a utility the host system can uncompress; specify the complete
+file name including the extension denoting its form of compression.
+If
+.I "fname"
+is
+.RB "``" "\-" "''"
+the mail folder is read from
+standard input.
+.PP
+.TP
+.BI \-\-newword " n"
+The probability that a word seen in mail which
+does not appear in the dictionary (or appeared too few times to
+assign it a probability with acceptable confidence) is indicative of
+junk is set to
+.RI "" "n" "."
+The default is 0.2\(emthe odds are that novel
+words are more likely to appear in legitimate mail than in junk.
+.PP
+.TP
+.BI \-\-pdiag " fname"
+Write a diagnostic file to the specified
+.I "fname"
+containing the actual lines the parser processed (after decoding of MIME
+parts and exclusion of data deemed unparseable).  Use this option when you
+suspect problems in decoding or pre-parser filtering.
+.PP
+.TP
+.BI \-\-phraselimit " n"
+Limit the length of phrases assembled according to the
+.B "\-\-phrasemin"
+and
+.B "\-\-phrasemax"
+options to
+.I "n"
+characters.  This
+permits ignoring ``phrases'' consisting of gibberish from mail headers
+and un-decoded content.  In most cases these items will be discarded by
+a
+.B "\-\-prune"
+in any case, but skipping them as they are generated keeps
+the dictionary from bloating in the first place.  The default value is
+48 characters.
+.PP
+.TP
+.BI \-\-phrasemin " n"
+Calculate probabilities of phrases consisting of
+a minumum of
+.I "n"
+words.  The default of 1 calculates probabilities for
+single words.
+.PP
+.TP
+.BI \-\-phrasemax " n"
+Calculate probabilities of phrases consisting of
+a maximum of
+.I "n"
+words.  The default of 1 calculates probabilities for
+single words.  If you set this too large, the dictionary may grow
+to an absurd size.
+.PP
+.TP
+.BI \-\-plot " fname"
+After loading the dictionary, create a
+plot in
+.I "fname"
+.B ".png"
+of the histogram of words, binned
+by their probability of appearance in junk mail.  In order to
+generate the histogram the
+.B "GNUPLOT"
+and
+.B "NETPbm"
+utilities must be installed on the system; if they are absent,
+the
+.B "\-\-plot"
+option will not be available.
+.PP
+.TP
+.BI \-\-pop3port " n"
+The POP3 proxy server activated by a subsequent
+.B "\-\-pop3server"
+option will listen for connections on port
+.RB "" "n" "."
+If
+no
+.B "\-\-pop3port"
+is specified, the server will listen on the default
+port of 9110.  On most systems, you'll have to run the program as
+root if you wish the proxy server to listen on a port numbered
+1023 or less.
+.PP
+.TP
+.BI \-\-pop3server " server[:port]"
+Activate a POP3
+proxy server which relays requests made on the previously
+specified
+.B "\-\-pop3port"
+or the default of 9110 if no port
+is specified, to the specified
+.RI "" "server" ","
+which may be
+given either as an IP address in ``dotted quad'' notion
+such as
+.B "10.89.11.131"
+or a fully-qualified domain name
+like
+.RB "" "pop.someisp.tld" "."
+The
+.I "port"
+on which the
+.I "server"
+listens for POP3 connections may be specified
+after the
+.I "server"
+prefixed by a colon
+.RB "(``" ":" "'')"
+; if no
+port is specified, the IANA assigned POP3 port 110 will be
+used. The POP3 proxy server will pass each message received on
+behalf of a requestor through the classifier and return the
+annotated transcript to the requestor, who may then filter it
+based on the classification appended to the message header. You
+must load a dictionary before activating the POP3 proxy server,
+and the
+.B "\-\-pop3server"
+option must be the last on the command
+line.  The server continues to run and service requests until
+manually terminated.
+.PP
+.TP
+.B \-\-pop3trace
+Write a trace of POP3 proxy server operations
+to standard error.  Each trace message (apart from the dump of the
+body of multi-line replies to clients) is prefixed with the
+label
+.RB "``" "POP3:\ " "''."
+.PP
+.TP
+.B \-\-prune
+After loading the dictionary from
+.B "\-\-mail"
+and
+.B "\-\-junk"
+folders, this option discards words which appear sufficiently
+infrequently that their probability cannot be reliably
+estimated.  One usually
+.B "\-\-prune"
+s the dictionary before
+using
+.B "\-\-write"
+to save it for subsequent runs.
+.PP
+.TP
+.B \-\-ptrace
+Include a token-by-token trace in the
+.B "\-\-pdiag"
+output
+file.  This helps when adjusting the parser's criteria for recognising
+tokens.  Setting this option without also specifying a
+.B "\-\-pdiag"
+file will have no effect other than perhaps to exercise your fingers
+typing it on the command line.
+.PP
+.TP
+.BI "\-\-read, \-r" " fname"
+Load a dictionary (previously
+created with the
+.B "\-\-write"
+option) from file
+.RI "" "fname" "."
+.PP
+.TP
+.BI \-\-sigwords " n"
+The probability that a message is junk will be computed
+based on the individual probabilities of the
+.I "n"
+words with extremal
+probabilities; that is, probabilities most indicative of junk or mail.  The
+default is 15, but there's no obvious optimal setting for this parameter; it
+depends in part on the average length of messages you receive.
+.PP
+.TP
+.B \-\-statistics
+After loading the dictionary from
+.B "\-\-mail"
+and
+.B "\-\-junk"
+folders, print statistics of the distribution of junk probabilities of
+words in the dictionary.  The statistics are written to standard output.
+.PP
+.TP
+.BI "\-\-test, \-t" " fname"
+Test mail in
+.I "fname"
+and
+write the estimated probability it is junk to standard output
+unless the
+.B "\-\-transcript"
+option is also specified with
+standard output
+.RB "(``" "\-" "'')"
+as the destination, in which case
+the inclusion of the probability and classification in the
+transcript is adjudged sufficient.  If the
+.B "\-\-verbose"
+option
+is specified, the individual probabilities of the ``most
+interesting'' words in the message will also be output.  If
+.I "fname"
+is
+.RB "``" "\-" "''"
+the message is read from standard
+input.
+.PP
+.TP
+.BI \-\-threshjunk " n"
+Set the threshold for classifying a
+message as junk to the floating point probability value
+.RI "" "n" "."
+The default threshold is 0.9; messages scored
+above
+.B "\-\-threshjunk"
+are deemed junk.
+.PP
+.TP
+.BI \-\-threshmail " n"
+Set the threshold for classifying a
+message as legitimate mail to the floating point probability value
+.RI "" "n" "."
+The default threshold is 0.9, with messages scored
+below
+.B "\-\-threshmail"
+deemed legitimate.  Note that you may
+leave a gap between the
+.B "\-\-threshmail"
+and
+.B "\-\-threshjunk"
+values (although it makes no sense to set
+.B "\-\-threshmail"
+higher).
+Mail scored between the two thresholds will then be judged
+of uncertain status.
+.PP
+.TP
+.BI \-\-transcript " fname"
+Write an annotated transcript of
+the original message to the specified
+.RI "" "fname" "."
+If
+.I "fname"
+is
+.RB "``" "\-" "'',"
+the transcript is written to
+standard output.  At the end of the message header, an
+.B "X\-Annoyance\-Filter\-Junk\-Probability"
+header item giving
+the computed probability and an
+.B "X\-Annoyance\-Filter\-Classification"
+item which gives the
+classification of the message according to
+the
+.B "\-\-threshmail"
+and
+.B "\-\-threshjunk"
+settings; the
+classification is given as
+.RB "``" "Mail" "'',"
+.RB "``" "Junk" "'',"
+or
+.RB "``" "Indeterminate" "''."
+.PP
+.TP
+.BR \-\-verbose ", " \-v
+Print diagnostic information as the program
+performs various operations.
+.PP
+.TP
+.B \-\-version
+Print program version information.
+.PP
+.TP
+.BI \-\-write " fname"
+Write a dictionary to the file
+.RI "" "fname" "."
+The dictionary is written in a binary format which may be
+loaded on subsequent runs with the
+.B "\-\-read"
+option.  Binary
+dictionary files are portable among machines with different
+architectures and byte order.
+\"  End inclusion from section "Options." of annoyance-filter.w.
+.SH "EXIT STATUS"
+The program exits with a
+status of 0 when processing is successfully completed,
+1 when an error (I/O or file access in most cases)
+occurs, and 2 to indicate a command line syntax error.
+If the
+.B \-\-classify
+option is specified, an exit status of
+0 identifies the message tested as legitimate mail,
+3 marks it as junk, and a status of 4 is returned for
+messages which cannot be confidently classified as
+either mail or junk.
+.SH FILES
+Files are read or written as requested by options on the
+command line; all options which read or write files
+take a
+.I fname
+argument which gives the file name.  The
+.BR \-\-classify ,
+.BR \-\-junk ,
+.BR \-\-mail ,
+.BR \-\-test ,
+and
+.B \-\-transcript
+options interpret an argument of
+.RB `` \- ''
+as denoting standard input or output.
+.PP
+On systems which
+provide the required services and utilities, arguments
+to the
+.B \-\-junk
+and
+.B \-\-mail
+options may be compressed files or the name of a directory
+containing one or more messages which will be read as if
+logically concatenated.  Messages in the directory may be
+compressed or uncompressed.
+.PP
+Error messages and diagnostic output generated when
+the
+.B \-\-verbose
+option is specified are written to standard error.
+.SH BUGS
+Millions, doubtless.  This is a program which must cope with
+whatever garbage is fed to it from mail folders, trying to
+make the best of it.  When it messes up, your efforts in
+identifying the message which caused the problem and
+submitting a verbatim copy of it with your bug report
+are much appreciated.
+.PP
+Please report bugs to
+.BR bugs @ fourmilab.ch
+and include
+.B annoyance-filter
+in the Subject line.  Thanks in advance.
+.ne 10
+.SH AUTHOR
+.ce 2
+John Walker
+http://www.fourmilab.ch/
+.PP
+This software is in the public domain. Permission to use, copy,
+modify, and distribute this software and its documentation for
+any purpose and without fee is hereby granted, without any
+conditions or restrictions.  This software is provided ``as
+is'' without express or implied warranty.
+.SH "SEE ALSO"
+.BR gnuplot (1),
+.BR gs (1),
+.BR gzip (1),
+.BR netpbm (1),
+.BR procmail (1),
+.BR xpdf (1)
+.PP
+.B annoyance-filter
+is written using the
+.I "Literate Programming"
+http://www.literateprogramming.com/ methodology; the
+user manual, program, and internal documentation
+are developed together, closely interlinked.
+Whenever the program is modified, the documentation is
+automatically updated, reducing the risk of divergence
+between what the manual says and what the program does.
+.PP
+This
+.B man
+page is intended as a reference for the command line
+options and most common applications of the program.  For
+comprehensive documentation, including details of how to
+integrate
+.B annoyance-filter
+with the
+.B procmail
+mail processing system, please refer to the complete
+documentation published in PDF format, available on the
+Web at:
+.ce 1
+http://www.fourmilab.ch/annoyance-filter/annoyance-filter.pdf
+.PP
+If you have downloaded the
+.B annoyance-filter
+source distribution, the corresponding version of
+.B \%annoyance-filter.pdf
+is included in the archive.  You can read PDF files
+with Acrobat reader (a free download from
+http://www.adobe.com/acrobat/readstep.html) or
+the
+.B xpdf
+or Ghostscript
+.RB ( gs )
+utilities.

@@ -1,0 +1,35 @@
+From 69018538371f84d371cd23caaf88f6f09f93d0f6 Mon Sep 17 00:00:00 2001
+From: Jari Aalto <jari.aalto@cante.net>
+Date: Fri, 14 Sep 2007 15:49:44 +0300
+Subject: [PATCH] annoyance-filter-run: dict.bin fix
+
+Signed-off-by: Jari Aalto <jari.aalto@cante.net>
+---
+ annoyance-filter-run |   12 +++++++-----
+ 1 files changed, 7 insertions(+), 5 deletions(-)
+
+diff --git a/annoyance-filter-run b/annoyance-filter-run
+index ec5703c..abb4f2c 100644
+--- a/annoyance-filter-run
++++ b/annoyance-filter-run
+@@ -1,10 +1,12 @@
+ #! /bin/sh -x
+ 
+     #	Filter a message through the annoyance filter
+-    #	installed in the standard $HOME/.annoyance-filter
+-    #	location.  We assume that when sendmail executes
++    #	and use dicti at $HOME/.annoyance-filter
++    #	We assume that when sendmail executes
+     #	this script on our behalf, it has changed the
+     #	current directory to our home.
+-    
+-    cd .annoyance-filter
+-    ./annoyance-filter --read dict.bin --transcript - --test -
++
++    dict=.annoyance-filter/dict.bin
++
++    [ -r $dict ] &&
++    annoyance-filter --read $dict --transcript - --test -
+-- 
+1.5.3
+
